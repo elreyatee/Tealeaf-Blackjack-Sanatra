@@ -1,0 +1,58 @@
+<div class='rules'>
+  <p>BLACKJACK PAYS 3 TO 2</p>
+  <p>Dealer must draw 16 and stand on all 17's</p>
+</div>
+
+<hr>
+
+<div class='player-well'>
+  <h4>Dealer's cards:</h4>
+  <% if !@show_flop %>
+	<img src='/images/cards/cover.svg' class='card'/>
+	<%= card_image(session[:dealer_cards].last) %>
+  <% else %>
+    <% session[:dealer_cards].each do |card| %>
+      <%= card_image(card) %>
+    <% end %>
+
+    <h5>Dealer's total value is <%= check_value(session[:dealer_cards])%></h5>
+
+    <% if @show_dealer_hit_button %>
+   	  <p>
+  	    <h5>Dealer will hit.</h5>
+	    <form action='/game/dealer/hit' method='post'>
+  	      <input type='submit' class='btn btn-primary' value='Click to see dealer card'>
+  	    </form>
+      </p>
+    <% end %>
+  <% end %>
+</div>
+
+<div class='player-well'>
+  <h4><%= session[:username]%>'s cards:</h4>
+  <% session[:player_cards].each do |card| %>
+    <%= card_image(card) %>
+  <% end %>
+
+  <p>
+    <% if @show_buttons%>	
+      <h4>What would you like to do?</h4>
+    <% end %>
+
+    <h4>Your total value is <span><%= check_value(session[:player_cards])%></span></h4>
+
+    <% if @show_buttons%>
+      <form id='hit' action='/game/player/hit' method='post'>
+        <input type='submit' class='btn btn-warning' value='Hit'>
+      </form>
+
+      <form id='stay' action='/game/player/stay' method='post'>
+        <input type='submit' class='btn btn-success' value='Stay'>
+      </form>
+    <% end %>
+  </p>
+</div>
+
+
+
+

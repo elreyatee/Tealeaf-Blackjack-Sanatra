@@ -1,0 +1,62 @@
+body {
+	z-index: 0;
+	background-image: url('/images/green-felt.jpg');
+	color: #FFEA00;
+	font-family: 'Droid Serif', serif;
+	text-shadow: 1px 1px black;
+}
+
+div.rules {
+	font-family: 'Playfair Display SC', serif;
+	text-align: center;
+	margin: 15px 0;
+}
+
+div.rules p:first-child {
+	color: #ED051C;
+	font-size: 50px;
+}
+
+div.rules p:last-child {
+	font-size: 30px;
+}
+
+div.rules p {
+	margin-bottom: 25px;
+}
+
+form#hit {
+	float: left;
+	margin-right: 10px;
+}
+
+form#stay {
+	float: left;
+}
+
+/*img.card {
+	width: 20%;
+	height: 20%;
+}*/
+
+.logo {
+	z-index: 1;
+	margin: 40px 0;
+}
+
+.player-well {
+	margin: 30px 0;
+	border: 3px solid #F5F1C6;
+	border-radius: 5px;
+	padding: 15px;
+}
+
+.player-well p {
+	clear: both;
+	margin-top: 30px;
+}
+
+span {
+	color: red;
+}
+
