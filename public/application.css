@@ -2,12 +2,12 @@ body {
 	z-index: 0;
 	background-image: url('/images/green-felt.jpg');
 	color: #FFEA00;
-	font-family: 'Droid Serif', serif;
+	font-family: 'Droid Serif';
 	text-shadow: 1px 1px black;
 }
 
 div.rules {
-	font-family: 'Playfair Display SC', serif;
+	font-family: 'Playfair Display SC';
 	text-align: center;
 	margin: 15px 0;
 }
