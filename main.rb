@@ -107,7 +107,6 @@ post '/submit_bet' do
 end
 
 get '/game' do
-
   suits = %w{spades clubs hearts diamonds}
   ranks = %w{ace 2 3 4 5 6 7 8 9 10 jack queen king}
   session[:deck] = suits.product(ranks).shuffle!
@@ -126,7 +125,6 @@ get '/game' do
 end
 
 post '/game/player/hit' do
-
   session[:player_cards] << session[:deck].pop
 
   player_total = check_value(session[:player_cards])
