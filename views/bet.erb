@@ -1,0 +1,8 @@
+<form action="/submit_bet" method="post">
+  <h3>How much in chips would you like? </h3> <br/>
+  <input type="text" name="chip_request"/>
+  <br/>
+  <h3> How much would you like to bet <%=session[:username]%>? </h3> <br/>
+  <input type="text" name="bet"/> <br/>
+  <input type="submit" class="btn" value="Submit"/>
+</form>

@@ -6,7 +6,7 @@
 <hr>
 
 <div class='player-well'>
-  <h4>Dealer's cards:</h4>
+  <h3>Dealer's cards:</h3>
   <% if !@show_flop %>
 	<img src='/images/cards/cover.svg' class='card'/>
 	<%= card_image(session[:dealer_cards].last) %>
@@ -29,10 +29,15 @@
 </div>
 
 <div class='player-well'>
-  <h4><%= session[:username]%>'s cards:</h4>
+  <h3><%= session[:username]%>'s cards:</h3>
   <% session[:player_cards].each do |card| %>
     <%= card_image(card) %>
   <% end %>
+
+  <div id='betting-side'>
+    <h4>Your chip amount: <span>$<%=session[:chips]%>.00</span></h4>
+    <h4>Your current bet: <span>$<%=session[:bet]%>.00</span></h4>
+  </div>
 
   <p>
     <% if @show_buttons%>	
@@ -48,6 +53,16 @@
 
       <form id='stay' action='/game/player/stay' method='post'>
         <input type='submit' class='btn btn-success' value='Stay'>
+      </form>
+    <% end %>
+
+    <% if @round_over%>
+      <form id='play_again' action="/game/new_bet" method='get'>
+        <input type="submit" class='btn btn-primary' value='Play Again?'>
+      </form>
+
+      <form id='quit' action="/game/thanks" method='get'>
+        <input type="submit" class='btn btn-warning' value='Quit?'>
       </form>
     <% end %>
   </p>

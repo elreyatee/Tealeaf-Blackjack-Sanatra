@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My First App</title>
+    <title>Blackjack!</title>
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/application.css">
     <link href='http://fonts.googleapis.com/css?family=Droid+Serif' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Playfair+Display+SC:900' rel='stylesheet' type='text/css'>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
   </head>
   <body style="padding-top: 50px;">
 
@@ -13,7 +15,8 @@
       <div class="navbar-inner">
         <div class="container">
             <ul class="nav">
-              <li><a href="/welcome">Start Over</a></li>
+              <li><a href="/welcome"><i class="fa fa-refresh"></i>
+Start Over</a></li>
             </ul>
         </div>
       </div>
@@ -21,10 +24,12 @@
 
   <div class="container">
     <%if @error %>
-      <div class="alert alert-error"><%=@error%></div>
+      <div class="alert alert-error"><i class="fa fa-frown-o"></i>
+<%=@error%></div>
     <% end %>
     <%if @success %>
-      <div class="alert alert-success"><%=@success%></div>
+      <div class="alert alert-success"><i class="fa fa-smile-o"></i>
+<%=@success%></div>
     <% end %>
       <%= yield %>
   </div>

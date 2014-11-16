@@ -3,6 +3,8 @@ require 'sinatra'
 
 set :sessions, true
 
+BLACKJACK = 21
+
 helpers do
   def check_value(cards)
     sum = 0
@@ -18,7 +20,7 @@ helpers do
 
     # correct for Aces
     cards.select {|card| card[1] == 'ace'}.count.times do
-      sum -= 10 if sum > 21
+      sum -= 10 if sum > BLACKJACK
     end
     sum
   end
@@ -29,11 +31,16 @@ helpers do
 
     "<img src='/images/cards/#{suit}_#{rank}.svg' class='card'/>"
   end
+
+  def blackjack_pays(bet)
+    (bet * 3) / 2
+  end
 end
 
 before do
   @show_buttons = true
   @show_flop = false
+  @round_over = false
 end
 
 get '/' do
@@ -51,6 +58,31 @@ post '/submit_name' do
   end
 
   session[:username] = params[:username] # capture username in cookie
+  redirect '/bet'
+end
+
+get '/bet' do
+  erb :bet
+end
+
+post '/submit_bet' do
+  case 
+  when params[:bet].empty?
+    @error = 'Invalid response, please place a bet'
+    halt erb(:bet)
+  when params[:chip_request].empty?
+    @error = 'Invalid response, please request chip amount'
+    halt erb(:bet)
+  when params[:chip_request].to_i % 5 != 0
+    @error = 'Please request chip amount in multiples of 5'
+    halt erb(:bet)
+  when params[:bet].to_i % 5 != 0 
+    @error = 'Please bet amount in multiples of 5'
+    halt erb(:bet)
+  end
+
+  session[:bet] = params[:bet].to_i
+  session[:chips] = params[:chip_request].to_i
   redirect '/game'
 end
 
@@ -68,19 +100,28 @@ get '/game' do
     session[:player_cards] << session[:deck].pop
     session[:dealer_cards] << session[:deck].pop
   end
+
   erb :game
 end
 
 post '/game/player/hit' do
+
   session[:player_cards] << session[:deck].pop
 
   player_total = check_value(session[:player_cards])
-  if player_total == 21
-    @success = "Congrats #{session[:username]}! You hit Blackjack!"
+
+  case 
+  when player_total == BLACKJACK
+    winnings = blackjack_pays(session[:bet])
+    @success = "Congrats, you hit Blackjack #{session[:username]}! You won $#{winnings}"
+    session[:chips] += winnings
+    @round_over = true
     @show_buttons = false
-  elsif player_total > 21
-    @error = "Sorry, you busted!"
+  when player_total > BLACKJACK
+    @error = "Sorry, you busted! You lost $#{session[:bet]}"
     @show_buttons = false
+    session[:chips] -= session[:bet]
+    @round_over = true
   end
 
   erb :game
@@ -98,11 +139,16 @@ get '/game/dealer' do
 
   dealer_total = check_value(session[:dealer_cards])
 
-  if dealer_total == 21
-    @error = "Sorry, dealer hit blackjack."
-  elsif dealer_total > 21
-    @success = "Congrats, dealer busted. You win!"
-  elsif dealer_total >= 17
+  case 
+  when dealer_total == BLACKJACK
+    @error = "Sorry, dealer hit blackjack. You lost $#{session[:bet]}"
+    session[:chips] -= session[:bet]
+    @round_over = true
+  when dealer_total > BLACKJACK
+    @success = "Congrats, dealer busted. You won $#{session[:bet]}!"
+    session[:chips] += session[:bet]
+    @round_over = true
+  when dealer_total >= 17
     redirect '/game/compare'
   else
     @show_dealer_hit_button = true
@@ -123,15 +169,42 @@ get '/game/compare' do
   player_total = check_value(session[:player_cards])
   dealer_total = check_value(session[:dealer_cards])
 
-  if player_total < dealer_total
-    @error = "Sorry, you lost."
-  elsif player_total > dealer_total
-    @success = "Congrats, you won!"
+  case 
+  when player_total < dealer_total
+    @error = "Sorry, you lost $#{session[:bet]}."
+    session[:chips] -= session[:bet]
+  when player_total > dealer_total
+    @success = "Congrats, you won $#{session[:bet]}!"
+    session[:chips] += session[:bet]
   else
     @success = "It's a tie!"
   end
 
+  @round_over = true
+
   erb :game
+end
+
+get '/game/new_bet' do
+  erb :new_bet
+end
+
+post '/submit_new_bet' do
+  case 
+  when params[:bet].empty?
+    @error = 'Invalid response, please place a bet'
+    halt erb(:new_bet)
+  when params[:bet].to_i % 5 != 0 
+    @error = 'Please bet amount in multiples of 5'
+    halt erb(:new_bet)
+  end
+
+  session[:bet] = params[:bet].to_i
+  redirect '/game'
+end
+
+get '/game/thanks' do
+  erb :thanks
 end
 
 

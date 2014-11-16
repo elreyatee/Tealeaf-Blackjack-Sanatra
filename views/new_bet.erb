@@ -1,0 +1,7 @@
+<h3>Your chip amount: <span>$<%= session[:chips]%>.00 </span></h3>
+
+<form action="/submit_new_bet" method="post"/>
+  <h3>How much would you like to bet <%=session[:username]%>? </h3><br/>
+  <input type="text" name="bet"/> <br/>
+  <input type="submit" class="btn" value="Submit"/>
+</form>
