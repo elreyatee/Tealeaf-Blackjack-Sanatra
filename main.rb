@@ -6,26 +6,28 @@ set :sessions, true
 BLACKJACK = 21
 
 helpers do
-  def check_value(cards)
+  def check_value(cards) #[['clubs', 'ace'], ['hearts', '5']]
+
+    ranks = cards.collect {|card| card[1]}
+
     sum = 0
-    cards.each do |card|
-      if card[1] == 'ace'
+    ranks.each do |rank|
+      if rank == 'ace'
         sum += 11
-      elsif card[1].to_i == 0
+      elsif rank.to_i == 0
         sum += 10
       else
-        sum += card[1].to_i
+        sum += rank.to_i
       end
     end
 
-    # correct for Aces
-    cards.select {|card| card[1] == 'ace'}.count.times do
+    ranks.select {|rank| rank == 'ace'}.count.times do
       sum -= 10 if sum > BLACKJACK
     end
     sum
   end
 
-  def card_image(card) 
+  def card_image(card) #['clubs', 'ace']
     suit = card[0]
     rank = card[1]
 
@@ -34,6 +36,24 @@ helpers do
 
   def blackjack_pays(bet)
     (bet * 3) / 2
+  end
+
+  def winner!(msg)
+    @round_over = true
+    @show_buttons = false
+    @success = "#{session[:username]} wins! #{msg}"
+  end
+
+  def loser!(msg)
+    @round_over = true
+    @show_buttons = false
+    @error = "#{session[:username]} loses! #{msg}"
+  end
+
+  def tie!(msg)
+    @round_over = true
+    @show_buttons = false
+    @success = "Push! #{msg}"
   end
 end
 
@@ -67,16 +87,16 @@ end
 
 post '/submit_bet' do
   case 
-  when params[:bet].empty?
+  when params[:bet].empty? 
     @error = 'Invalid response, please place a bet'
     halt erb(:bet)
-  when params[:chip_request].empty?
+  when params[:chip_request].empty? 
     @error = 'Invalid response, please request chip amount'
     halt erb(:bet)
-  when params[:chip_request].to_i % 5 != 0
+  when params[:chip_request].to_i % 5 != 0 || params[:chip_request].to_i == 0
     @error = 'Please request chip amount in multiples of 5'
     halt erb(:bet)
-  when params[:bet].to_i % 5 != 0 
+  when params[:bet].to_i % 5 != 0 || params[:bet].to_i == 0
     @error = 'Please bet amount in multiples of 5'
     halt erb(:bet)
   end
@@ -91,6 +111,7 @@ get '/game' do
   suits = %w{spades clubs hearts diamonds}
   ranks = %w{ace 2 3 4 5 6 7 8 9 10 jack queen king}
   session[:deck] = suits.product(ranks).shuffle!
+  session[:deck] *= 3
   
   session[:player_cards] = []
   session[:dealer_cards] = []
@@ -112,16 +133,11 @@ post '/game/player/hit' do
 
   case 
   when player_total == BLACKJACK
-    winnings = blackjack_pays(session[:bet])
-    @success = "Congrats, you hit Blackjack #{session[:username]}! You won $#{winnings}"
-    session[:chips] += winnings
-    @round_over = true
-    @show_buttons = false
+    winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
+    session[:chips] += blackjack_pays(session[:bet])
   when player_total > BLACKJACK
-    @error = "Sorry, you busted! You lost $#{session[:bet]}"
-    @show_buttons = false
+    loser!("Sorry, you busted! You lost $#{session[:bet]}")
     session[:chips] -= session[:bet]
-    @round_over = true
   end
 
   erb :game
@@ -134,20 +150,17 @@ post '/game/player/stay' do
 end
 
 get '/game/dealer' do
-  @show_buttons = false
   @show_flop = true
 
   dealer_total = check_value(session[:dealer_cards])
 
   case 
   when dealer_total == BLACKJACK
-    @error = "Sorry, dealer hit blackjack. You lost $#{session[:bet]}"
+    loser!("Dealer hit blackjack. You lost $#{session[:bet]}")
     session[:chips] -= session[:bet]
-    @round_over = true
   when dealer_total > BLACKJACK
-    @success = "Congrats, dealer busted. You won $#{session[:bet]}!"
+    winner!("Dealer busted. You won $#{session[:bet]}!")
     session[:chips] += session[:bet]
-    @round_over = true
   when dealer_total >= 17
     redirect '/game/compare'
   else
@@ -163,7 +176,6 @@ post '/game/dealer/hit' do
 end
 
 get '/game/compare' do
-  @show_buttons = false
   @show_flop = true
 
   player_total = check_value(session[:player_cards])
@@ -171,16 +183,14 @@ get '/game/compare' do
 
   case 
   when player_total < dealer_total
-    @error = "Sorry, you lost $#{session[:bet]}."
+    loser!("You lost $#{session[:bet]}.")
     session[:chips] -= session[:bet]
   when player_total > dealer_total
-    @success = "Congrats, you won $#{session[:bet]}!"
+    winner!("You won $#{session[:bet]}!")
     session[:chips] += session[:bet]
   else
-    @success = "It's a tie!"
+    tie!("It's a tie!")
   end
-
-  @round_over = true
 
   erb :game
 end
@@ -191,7 +201,7 @@ end
 
 post '/submit_new_bet' do
   case 
-  when params[:bet].empty?
+  when params[:bet].empty? || params[:bet].to_i == 0
     @error = 'Invalid response, please place a bet'
     halt erb(:new_bet)
   when params[:bet].to_i % 5 != 0 
