@@ -2,12 +2,12 @@ body {
 	z-index: 0;
 	background-image: url('/images/green-felt.jpg');
 	color: #FFEA00;
-	font-family: 'Droid Serif';
+	font-family: 'Droid Serif', serif;
 	text-shadow: 1px 1px black;
 }
 
 div.rules {
-	font-family: 'Playfair Display SC';
+	font-family: 'Playfair Display SC', serif;
 	text-align: center;
 	margin: 15px 0;
 }
@@ -68,6 +68,16 @@ div#betting-side {
 	float: right;
 	margin-right: 50px;
 	margin-top: -50px;
+}
+
+@font-face {
+  font-family: "Droid Serif";
+  src: url("DroidSerif-Bold.ttf");
+}
+
+@font-face {
+  font-family: "Playfair Display SC";
+  src: url("PlayfairDsiplaySC-Black.ttf");
 }
 
 
