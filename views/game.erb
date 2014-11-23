@@ -29,15 +29,15 @@
 </div>
 
 <div class='player-well'>
+  <div id='betting-side'>
+    <h4>Chip amount: <span>$<%=session[:chips]%>.00</span></h4>
+    <h4>Your current bet: <span>$<%=session[:bet]%>.00</span></h4>
+  </div>
+
   <h3><%= session[:username]%>'s cards:</h3>
   <% session[:player_cards].each do |card| %>
     <%= card_image(card) %>
   <% end %>
-
-  <div id='betting-side'>
-    <h4>Your chip amount: <span>$<%=session[:chips]%>.00</span></h4>
-    <h4>Your current bet: <span>$<%=session[:bet]%>.00</span></h4>
-  </div>
 
   <p>
     <% if @show_buttons%>	

@@ -1,7 +1,9 @@
 require 'rubygems'
 require 'sinatra'
 
-set :sessions, true
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => 'your_secret'
 
 BLACKJACK = 21
 
@@ -55,6 +57,17 @@ helpers do
     @show_buttons = false
     @success = "Push! #{msg}"
   end
+
+  def valid_bet?(bet)
+    if bet == 0 || bet < 0
+      @error = 'Invalid submission, please place a valid bet'
+      halt erb(:bet)
+    elsif bet > session[:chips] 
+      @error = 'You cannot bet more than your chip amount'
+      halt erb(:bet)
+    end
+    true
+  end
 end
 
 before do
@@ -82,27 +95,16 @@ post '/submit_name' do
 end
 
 get '/bet' do
+  session[:chips] = 500
   erb :bet
 end
 
 post '/submit_bet' do
-  case 
-  when params[:bet].empty? 
-    @error = 'Invalid response, please place a bet'
-    halt erb(:bet)
-  when params[:chip_request].empty? 
-    @error = 'Invalid response, please request chip amount'
-    halt erb(:bet)
-  when params[:chip_request].to_i % 5 != 0 || params[:chip_request].to_i == 0
-    @error = 'Please request chip amount in multiples of 5'
-    halt erb(:bet)
-  when params[:bet].to_i % 5 != 0 || params[:bet].to_i == 0
-    @error = 'Please bet amount in multiples of 5'
-    halt erb(:bet)
+
+  if valid_bet?(params[:bet].to_i)
+    session[:bet] = params[:bet].to_i
   end
 
-  session[:bet] = params[:bet].to_i
-  session[:chips] = params[:chip_request].to_i
   redirect '/game'
 end
 
@@ -129,21 +131,25 @@ post '/game/player/hit' do
 
   player_total = check_value(session[:player_cards])
 
-  case 
-  when player_total == BLACKJACK
+  if player_total == BLACKJACK
     winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
     session[:chips] += blackjack_pays(session[:bet])
-  when player_total > BLACKJACK
+    @round_over = true
+    @show_buttons = false
+  elsif player_total > BLACKJACK
     loser!("Sorry, you busted! You lost $#{session[:bet]}")
     session[:chips] -= session[:bet]
+    @round_over = true
+    @show_buttons = false
+    redirect '/game_over' if session[:chips] == 0
   end
 
   erb :game
 end
 
 post '/game/player/stay' do
-  @success = "You have chosen to stay."
   @show_buttons = false
+  @success = "You have chosen to stay."
   redirect '/game/dealer'
 end
 
@@ -152,14 +158,15 @@ get '/game/dealer' do
 
   dealer_total = check_value(session[:dealer_cards])
 
-  case 
-  when dealer_total == BLACKJACK
+   
+  if dealer_total == BLACKJACK
     loser!("Dealer hit blackjack. You lost $#{session[:bet]}")
     session[:chips] -= session[:bet]
-  when dealer_total > BLACKJACK
+    redirect '/game_over' if session[:chips] == 0
+  elsif dealer_total > BLACKJACK
     winner!("Dealer busted. You won $#{session[:bet]}!")
     session[:chips] += session[:bet]
-  when dealer_total >= 17
+  elsif dealer_total >= 17
     redirect '/game/compare'
   else
     @show_dealer_hit_button = true
@@ -179,11 +186,12 @@ get '/game/compare' do
   player_total = check_value(session[:player_cards])
   dealer_total = check_value(session[:dealer_cards])
 
-  case 
-  when player_total < dealer_total
+  
+  if player_total < dealer_total
     loser!("You lost $#{session[:bet]}.")
     session[:chips] -= session[:bet]
-  when player_total > dealer_total
+    redirect '/game_over' if session[:chips] == 0
+  elsif player_total > dealer_total
     winner!("You won $#{session[:bet]}!")
     session[:chips] += session[:bet]
   else
@@ -198,16 +206,11 @@ get '/game/new_bet' do
 end
 
 post '/submit_new_bet' do
-  case 
-  when params[:bet].empty? || params[:bet].to_i == 0
-    @error = 'Invalid response, please place a bet'
-    halt erb(:new_bet)
-  when params[:bet].to_i % 5 != 0 
-    @error = 'Please bet amount in multiples of 5'
-    halt erb(:new_bet)
+
+  if valid_bet?(params[:bet].to_i)
+    session[:bet] = params[:bet].to_i
   end
 
-  session[:bet] = params[:bet].to_i
   redirect '/game'
 end
 
@@ -215,5 +218,8 @@ get '/game/thanks' do
   erb :thanks
 end
 
+get '/game_over' do
+  erb :game_over
+end
 
 

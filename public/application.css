@@ -64,12 +64,6 @@ span {
 	color: red;
 }
 
-div#betting-side {
-	float: right;
-	margin-right: 50px;
-	margin-top: -50px;
-}
-
 @font-face {
   font-family: "Droid Serif";
   src: url("DroidSerif-Bold.ttf");
