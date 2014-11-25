@@ -1,5 +1,4 @@
-$(document).ready(function() {
-	
+function playerHit() {
 	$(document).on('click', 'form#hit input', function () {
 		$.ajax({
 			url: '/game/player/hit',
@@ -9,7 +8,9 @@ $(document).ready(function() {
 		});
 		return false;
 	});
+};
 
+function playerStay() {
 	$(document).on('click', 'form#stay input', function() {
 		$.ajax({
 			url: '/game/player/stay',
@@ -21,7 +22,9 @@ $(document).ready(function() {
 		window.location.href = '#dealer-cards';
 		return false;
 	});
+};
 
+function dealerHit() {
 	$(document).on('click', 'form#dealer_hit input', function() {
 		$.ajax({
 			url: '/game/dealer/hit',
@@ -31,4 +34,12 @@ $(document).ready(function() {
 		});
 		return false;
 	});
+};
+
+$(document).ready(function() {
+	
+	playerHit();
+	playerStay();
+	dealerHit();
+
 });
