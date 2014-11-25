@@ -127,6 +127,11 @@ get '/game' do
     session[:dealer_cards] << session[:deck].pop
   end
 
+  # player wins if dealt blackjack
+  if check_value(session[:player_cards]) == BLACKJACK
+    winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
+  end
+
   erb :game
 end
 
@@ -146,14 +151,7 @@ post '/game/player/hit' do
 end
 
 post '/game/player/stay' do
-
-  if check_value(session[:player_cards]) == BLACKJACK
-    winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
-    erb :game, layout: false
-  else
-    @winner = "You have chosen to stay."
-    redirect '/game/dealer'
-  end
+  redirect '/game/dealer'
 end
 
 get '/game/dealer' do
