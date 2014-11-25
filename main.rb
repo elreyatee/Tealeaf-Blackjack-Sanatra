@@ -6,6 +6,7 @@ use Rack::Session::Cookie, :key => 'rack.session',
                            :secret => 'your_secret'
 
 BLACKJACK = 21
+DEFAULT_POT = 500
 
 helpers do
   def check_value(cards) #[['clubs', 'ace'], ['hearts', '5']]
@@ -43,30 +44,26 @@ helpers do
   def winner!(msg)
     @round_over = true
     @show_buttons = false
-    @success = "#{session[:username]} wins! #{msg}"
+    
+    if check_value(session[:player_cards]) == BLACKJACK
+      session[:chips] += blackjack_pays(session[:bet])
+    else
+      session[:chips] += session[:bet]
+    end
+    @success = "<strong>#{session[:username]}</strong> wins! #{msg}"
   end
 
   def loser!(msg)
     @round_over = true
     @show_buttons = false
-    @error = "#{session[:username]} loses! #{msg}"
+    session[:chips] -= session[:bet]
+    @error = "<strong>#{session[:username]}</strong> loses! #{msg}"
   end
 
   def tie!(msg)
     @round_over = true
     @show_buttons = false
-    @success = "Push! #{msg}"
-  end
-
-  def valid_bet?(bet)
-    if bet == 0 || bet < 0
-      @error = 'Invalid submission, please place a valid bet'
-      halt erb(:bet)
-    elsif bet > session[:chips] 
-      @error = 'You cannot bet more than your chip amount'
-      halt erb(:bet)
-    end
-    true
+    @success = "Push! <strong>#{msg}</strong>"
   end
 end
 
@@ -81,12 +78,13 @@ get '/' do
 end
 
 get '/welcome' do
+  session[:chips] = DEFAULT_POT
   erb :welcome
 end
 
 post '/submit_name' do
   if params[:username].empty?
-    @error = 'Name is required'
+    @error = "Name is required."
     halt erb(:welcome)
   end
 
@@ -95,17 +93,22 @@ post '/submit_name' do
 end
 
 get '/bet' do
-  session[:chips] = 500
+  session[:bet] = nil
   erb :bet
 end
 
-post '/submit_bet' do
+post '/bet' do
 
-  if valid_bet?(params[:bet].to_i)
+  if params[:bet].nil? || params[:bet].to_i == 0
+    @error = "Invalid response, please try again."
+    halt erb(:bet)
+  elsif params[:bet].to_i > session[:chips].to_i
+    @error = "You cannot bet more than $#{session[:chips]}.00, please try again."
+    halt erb(:bet)
+  else 
     session[:bet] = params[:bet].to_i
+    redirect '/game'
   end
-
-  redirect '/game'
 end
 
 get '/game' do
@@ -133,14 +136,8 @@ post '/game/player/hit' do
 
   if player_total == BLACKJACK
     winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
-    session[:chips] += blackjack_pays(session[:bet])
-    @round_over = true
-    @show_buttons = false
   elsif player_total > BLACKJACK
     loser!("Sorry, you busted! You lost $#{session[:bet]}")
-    session[:chips] -= session[:bet]
-    @round_over = true
-    @show_buttons = false
     redirect '/game_over' if session[:chips] == 0
   end
 
@@ -148,24 +145,21 @@ post '/game/player/hit' do
 end
 
 post '/game/player/stay' do
-  @show_buttons = false
   @success = "You have chosen to stay."
   redirect '/game/dealer'
 end
 
 get '/game/dealer' do
   @show_flop = true
+  @show_buttons = false
 
   dealer_total = check_value(session[:dealer_cards])
 
-   
   if dealer_total == BLACKJACK
-    loser!("Dealer hit blackjack. You lost $#{session[:bet]}")
-    session[:chips] -= session[:bet]
+    loser!("Dealer hit blackjack. You lost $#{session[:bet]}.")
     redirect '/game_over' if session[:chips] == 0
   elsif dealer_total > BLACKJACK
     winner!("Dealer busted. You won $#{session[:bet]}!")
-    session[:chips] += session[:bet]
   elsif dealer_total >= 17
     redirect '/game/compare'
   else
@@ -185,33 +179,17 @@ get '/game/compare' do
 
   player_total = check_value(session[:player_cards])
   dealer_total = check_value(session[:dealer_cards])
-
   
   if player_total < dealer_total
     loser!("You lost $#{session[:bet]}.")
-    session[:chips] -= session[:bet]
     redirect '/game_over' if session[:chips] == 0
   elsif player_total > dealer_total
     winner!("You won $#{session[:bet]}!")
-    session[:chips] += session[:bet]
   else
     tie!("It's a tie!")
   end
 
   erb :game
-end
-
-get '/game/new_bet' do
-  erb :new_bet
-end
-
-post '/submit_new_bet' do
-
-  if valid_bet?(params[:bet].to_i)
-    session[:bet] = params[:bet].to_i
-  end
-
-  redirect '/game'
 end
 
 get '/game/thanks' do
