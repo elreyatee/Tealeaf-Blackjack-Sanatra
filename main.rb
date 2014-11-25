@@ -141,7 +141,7 @@ post '/game/player/hit' do
     redirect '/game_over' if session[:chips] == 0
   end
 
-  erb :game, :layout false
+  erb :game, layout: false
 end
 
 post '/game/player/stay' do
