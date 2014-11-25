@@ -146,11 +146,12 @@ post '/game/player/hit' do
 end
 
 post '/game/player/stay' do
-  @success = "You have chosen to stay."
+
   if check_value(session[:player_cards]) == BLACKJACK
     winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
-    redirect '/bet'
+    erb :game, layout: false
   else
+    @winner = "You have chosen to stay."
     redirect '/game/dealer'
   end
 end

@@ -33,6 +33,7 @@ form#hit, form#play_again {
 
 form#stay, form#quit {
 	float: left;
+	margin-bottom: 10px;
 }
 
 img.card {

@@ -7,15 +7,13 @@
   <hr>
 
   <%if @loser %>
-      <div class="alert alert-error"><i class="fa fa-frown-o"></i>
-<%=@loser%></div>
-    <% end %>
-    <%if @winner %>
-      <div class="alert alert-success"><i class="fa fa-smile-o"></i>
-<%=@winner%></div>
-    <% end %>
+    <div class="alert alert-error"><i class="fa fa-frown-o"></i><%=@loser%></div>
+  <% end %>
 
- 
+  <%if @winner %>
+    <div class="alert alert-success"><i class="fa fa-smile-o"></i><%=@winner%></div>
+  <% end %>
+
   <div class='player-well' id='dealer-cards'>
     <h3>Dealer's cards:</h3>
     <% if !@show_flop %>
@@ -38,7 +36,6 @@
       <% end %>
     <% end %>
   </div>
-  
 
   <div class='player-well' id='player-cards'>
     <div id='betting-side'>
