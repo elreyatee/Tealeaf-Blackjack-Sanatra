@@ -4,6 +4,7 @@ body {
 	color: #FFEA00;
 	font-family: 'Droid Serif', serif;
 	text-shadow: 1px 1px black;
+	font-size: 16px;
 }
 
 div.rules {
@@ -35,8 +36,8 @@ form#stay, form#quit {
 }
 
 img.card {
-	width: 15%;
-	height: 15%;
+	width: 16%;
+	height: 16%;
 	margin-right: 10px;
 	border-radius: 10px;
 	box-shadow: 3px 3px 6px black;
@@ -73,6 +74,8 @@ span {
   font-family: "Playfair Display SC";
   src: url("PlayfairDisplaySC-Black.ttf");
 }
+
+
 
 
 

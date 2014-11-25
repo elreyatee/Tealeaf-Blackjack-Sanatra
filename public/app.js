@@ -17,6 +17,8 @@ $(document).ready(function() {
 		}).done(function(msg){
 			$('#game').replaceWith(msg);
 		});
+
+		window.location.href = '#dealer-cards';
 		return false;
 	});
 

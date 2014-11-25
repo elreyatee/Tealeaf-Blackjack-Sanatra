@@ -7,6 +7,7 @@ use Rack::Session::Cookie, :key => 'rack.session',
 
 BLACKJACK = 21
 DEFAULT_POT = 500
+DEALER_MIN = 17
 
 helpers do
   def check_value(cards) #[['clubs', 'ace'], ['hearts', '5']]
@@ -50,20 +51,20 @@ helpers do
     else
       session[:chips] += session[:bet]
     end
-    @success = "<strong>#{session[:username]}</strong> wins! #{msg}"
+    @winner = "<strong>#{session[:username]}</strong> wins! #{msg}"
   end
 
   def loser!(msg)
     @round_over = true
     @show_buttons = false
     session[:chips] -= session[:bet]
-    @error = "<strong>#{session[:username]}</strong> loses! #{msg}"
+    @loser = "<strong>#{session[:username]}</strong> loses! #{msg}"
   end
 
   def tie!(msg)
     @round_over = true
     @show_buttons = false
-    @success = "Push! <strong>#{msg}</strong>"
+    @winner = "Push! <strong>#{msg}</strong>"
   end
 end
 
@@ -146,7 +147,12 @@ end
 
 post '/game/player/stay' do
   @success = "You have chosen to stay."
-  redirect '/game/dealer'
+  if check_value(session[:player_cards]) == BLACKJACK
+    winner!("You hit Blackjack #{session[:username]}! You won $#{blackjack_pays(session[:bet])}")
+    redirect '/bet'
+  else
+    redirect '/game/dealer'
+  end
 end
 
 get '/game/dealer' do
@@ -160,13 +166,13 @@ get '/game/dealer' do
     redirect '/game_over' if session[:chips] == 0
   elsif dealer_total > BLACKJACK
     winner!("Dealer busted. You won $#{session[:bet]}!")
-  elsif dealer_total >= 17
+  elsif dealer_total >= DEALER_MIN
     redirect '/game/compare'
   else
     @show_dealer_hit_button = true
   end
 
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/dealer/hit' do

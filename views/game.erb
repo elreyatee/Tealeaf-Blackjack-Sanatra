@@ -6,7 +6,17 @@
 
   <hr>
 
-  <div class='player-well'>
+  <%if @loser %>
+      <div class="alert alert-error"><i class="fa fa-frown-o"></i>
+<%=@loser%></div>
+    <% end %>
+    <%if @winner %>
+      <div class="alert alert-success"><i class="fa fa-smile-o"></i>
+<%=@winner%></div>
+    <% end %>
+
+ 
+  <div class='player-well' id='dealer-cards'>
     <h3>Dealer's cards:</h3>
     <% if !@show_flop %>
   	<img src='/images/cards/cover.svg' class='card'/>
@@ -28,8 +38,9 @@
       <% end %>
     <% end %>
   </div>
+  
 
-  <div class='player-well'>
+  <div class='player-well' id='player-cards'>
     <div id='betting-side'>
       <h4>Chip amount: <span>$<%=session[:chips]%>.00</span></h4>
       <h4>Your current bet: <span>$<%=session[:bet]%>.00</span></h4>
